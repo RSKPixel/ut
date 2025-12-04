@@ -128,14 +128,28 @@ def plot_tv_ohlc_bokeh(
         df_dp = data[data["dow_point"].notna()].copy()
 
         # Split by direction
-        df_up = df_dp[df_dp["direction"] == 1]  # blue line
+        df_points = df_dp[df_dp["direction"].notna()]
         df_down = df_dp[df_dp["direction"] == -1]  # red line
+        df_up = df_dp[df_dp["direction"] == 1]  # blue line
         p.line(
-            df_up["x_real"].values,
-            df_up["dow_point"].values,
-            color="blue",
-            line_width=2,
+            df_points["x_real"].values,
+            df_points["dow_point"].values,
+            color="green",
+            line_width=1,
+            # line_dash="dotted",
         )
+        # p.line(
+        #     df_up["x_real"].values,
+        #     df_up["dow_point"].values,
+        #     color="blue",
+        #     line_width=2,
+        # )
+        # p.line(
+        #     df_down["x_real"].values,
+        #     df_down["dow_point"].values,
+        #     color="red",
+        #     line_width=2,
+        # )
 
         # Plot UP trend (direction = 1)
     # --- Swing line & markers (use real x so alignment matches data index) ---

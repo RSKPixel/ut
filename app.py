@@ -6,7 +6,7 @@ from config import eod
 from bokeh_chart import plot_tv_ohlc_bokeh
 from streamlit_bokeh import streamlit_bokeh
 from datetime import datetime, timedelta
-from tools import asc, lv, weekly_rdata, ddt
+from tools import asc, lv, weekly_rdata, ddt, ddt2
 
 
 def main():
@@ -17,8 +17,8 @@ def main():
         ["CRUDEOIL", "GOLD", "SILVER", "NATURALGAS", "NIFTY", "BANKNIFTY"],
         index=0,
     )
-    # df_ohlc = eod(symbol, "2020-01-01", "2025-11-29")
-    df_ohlc = pd.read_csv(f"data/{symbol.lower()}-ohlc-data.csv")
+    df_ohlc = eod(symbol, "2024-01-02", "2024-12-31")
+    # df_ohlc = pd.read_csv(f"data/{symbol.lower()}-ohlc-data.csv")
     df_ohlc["date"] = pd.to_datetime(df_ohlc["date"])
     df_ohlc.set_index("date", inplace=True)
     df = df_ohlc.copy()
@@ -37,8 +37,12 @@ def main():
     df["ldv"] = lv(df["high"], df["low"], df["close"], lookback=4)
 
     df = weekly_rdata(df)
-    df = df[df.index >= df.index.max() - timedelta(days=180)]
-    df = ddt(df)
+    # df = df[
+    #     (df.index >= df.index.max() - timedelta(days=180))
+    #     & (df.index <= datetime.strptime("2025-08-15", "%Y-%m-%d"))
+    # ]
+
+    df = ddt2(df)
 
     # df = ddt(df)
     df["x"] = range(len(df))
@@ -66,6 +70,8 @@ def main():
                 "bar_type",
                 "swing_point",
                 "swing",
+                "peak",
+                "trough",
                 "dow_point",
                 "direction",
                 "mvf",
