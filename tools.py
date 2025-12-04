@@ -13,12 +13,19 @@ def ddt(df: pd.DataFrame) -> pd.DataFrame:
     current_high = -np.inf
     current_low = np.inf
 
-
     for d in range(1, n):
-        current_high = df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "high" else current_high
-        current_low = df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "low" else current_low
-        low = df.iloc[d]["low"]
-        high = df.iloc[d]["high"]
+        current_high = (
+            df.iloc[d - 1]["swing_point"]
+            if df.iloc[d]["swing"] == "high"
+            else current_high
+        )
+        current_low = (
+            df.iloc[d - 1]["swing_point"]
+            if df.iloc[d]["swing"] == "low"
+            else current_low
+        )
+        low = df.iloc[d - 1]["low"]
+        high = df.iloc[d - 1]["high"]
 
         if np.isnan(current_high) and np.isnan(current_low):
             continue
@@ -26,13 +33,14 @@ def ddt(df: pd.DataFrame) -> pd.DataFrame:
         if current_high > high:
             df.at[df.index[d], "dow_high"] = current_high
             df.at[df.index[d], "dow_points"] = current_high
-            df.at[df.index[d], "direction"] = 1
+            df.at[df.index[d], "direction"] = -1
         elif current_low < low:
             df.at[df.index[d], "dow_low"] = current_low
             df.at[df.index[d], "dow_points"] = current_low
-            df.at[df.index[d], "direction"] = -1
+            df.at[df.index[d], "direction"] = 1
 
-    return df        
+    return df
+
 
 def asc(close: pd.Series, lookback=20) -> pd.Series:
     n = len(close)

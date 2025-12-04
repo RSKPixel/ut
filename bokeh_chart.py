@@ -18,7 +18,7 @@ def plot_tv_ohlc_bokeh(
     title="TradingView OHLC (TV-like)",
     swing=True,
     debugging=False,
-    dt = True
+    dt=True,
 ):
 
     data = data.copy()
@@ -124,60 +124,30 @@ def plot_tv_ohlc_bokeh(
     p.min_border_left = 10
     p.min_border_right = 10
 
-
     if dt:
         df_dp = data[data["dow_points"].notna()].copy()
 
-        # protect against empty
-        if df_dp.empty:
-            # nothing to plot
-            segments = []
-        else:
-            # segment id when direction changes
-            df_dp["seg"] = (df_dp["direction"] != df_dp["direction"].shift()).cumsum()
+        # Split by direction
+        df_up = df_dp[df_dp["direction"] == 1]  # blue line
+        df_down = df_dp[df_dp["direction"] == -1]  # red line
 
-            segments = []
-            prev_end = None
+        # Plot UP trend (direction = 1)
+        if not df_up.empty:
+            p.line(
+                df_up["x_real"].values,
+                df_up["dow_points"].values,
+                color="blue",
+                line_width=2,
+            )
 
-            for seg_id, seg_df in df_dp.groupby("seg"):
-
-                # list of x,y for this segment (only its own dow_points)
-                x = seg_df["x_real"].tolist()
-                y = seg_df["dow_points"].tolist()
-
-                # If not the first segment, connect to the previous segment's last dow_point value
-                if prev_end is not None:
-                    # pivot bar is the first row of the new segment
-                    pivot_idx = seg_df.index[0]
-                    pivot_x = data.loc[pivot_idx, "x_real"]
-
-                    # use previous segment's last dow_point value as the intersection y
-                    prev_dow_y = segments[-1]["y"][-1]
-
-                    # extend previous segment to the pivot_x at prev_dow_y
-                    segments[-1]["x"].append(pivot_x)
-                    segments[-1]["y"].append(prev_dow_y)
-
-                    # prepend same intersection point to the new segment
-                    x = [pivot_x] + x
-                    y = [prev_dow_y] + y
-
-                segments.append({
-                    "x": x,
-                    "y": y,
-                    "dir": seg_df["direction"].iloc[0],
-                })
-
-                # store end of current segment for next iteration
-                prev_end = (x[-1], y[-1])
-
-        # -------------------------
-        # Now plot segments (Bokeh 'p' must exist)
-        # -------------------------
-        for seg in segments:
-            color = "blue" if seg["dir"] == 1 else "red"
-            # seg["x"] and seg["y"] are plain Python lists => safe to pass to p.line
-            p.line(seg["x"], seg["y"], color=color, line_width=1)
+        # Plot DOWN trend (direction = -1)
+        if not df_down.empty:
+            p.line(
+                df_down["x_real"].values,
+                df_down["dow_points"].values,
+                color="red",
+                line_width=2,
+            )
     # --- Swing line & markers (use real x so alignment matches data index) ---
     if swing:
         df_sw = data[data["swing_point"].notna()]
@@ -212,7 +182,6 @@ def plot_tv_ohlc_bokeh(
         line_width=3,
         color="color",
     )
-
 
     if compare:
         # --- Penfold Swing line & markers (use real x so alignment matches data index) ---
