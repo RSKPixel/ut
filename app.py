@@ -6,7 +6,7 @@ from config import eod
 from bokeh_chart import plot_tv_ohlc_bokeh
 from streamlit_bokeh import streamlit_bokeh
 from datetime import datetime, timedelta
-from tools import asc, lv, weekly_rdata, compute_dow_points
+from tools import asc, lv, weekly_rdata, ddt
 
 
 def main():
@@ -38,7 +38,7 @@ def main():
 
     df = weekly_rdata(df)
     df = df[df.index >= df.index.max() - timedelta(days=180)]
-    df = compute_dow_points(df)
+    df = ddt(df)
 
     # df = ddt(df)
     df["x"] = range(len(df))
@@ -66,10 +66,8 @@ def main():
                 "bar_type",
                 "swing_point",
                 "swing",
-                "ddow_trend",
-                "dPeak",
-                "dTrough",
-                "ddow_signal",
+                "dow_trend",
+                "direction",
                 "mvf",
                 "ldv",
                 "lwv",
