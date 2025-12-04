@@ -125,14 +125,14 @@ def plot_tv_ohlc_bokeh(
     p.min_border_right = 10
 
     if dt:
-        df_dp = data[data["dow_trend"].notna()].copy()
+        df_dp = data[data["dow_point"].notna()].copy()
 
         # Split by direction
         df_up = df_dp[df_dp["direction"] == 1]  # blue line
         df_down = df_dp[df_dp["direction"] == -1]  # red line
         p.line(
             df_up["x_real"].values,
-            df_up["dow_trend"].values,
+            df_up["dow_point"].values,
             color="blue",
             line_width=2,
         )

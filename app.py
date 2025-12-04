@@ -66,7 +66,7 @@ def main():
                 "bar_type",
                 "swing_point",
                 "swing",
-                "dow_trend",
+                "dow_point",
                 "direction",
                 "mvf",
                 "ldv",

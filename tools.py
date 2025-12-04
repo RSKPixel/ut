@@ -4,55 +4,45 @@ import pandas as pd
 def ddt(data: pd.DataFrame) -> pd.DataFrame:
     df = data.copy()
 
-    df["dow_peak"] = np.nan
-    df["dow_trough"] = np.nan
     df["direction"] = np.nan
-    df["dow_trend"] = np.nan
+    df["dow_point"] = np.nan
 
     n = len(df)
-    trent_point = None
+    dow_point = None
     direction = 0
     swing_high = 0
     swing_low = 0
 
     if df.iloc[0]["swing"] == "high":
-        trent_point = df.iloc[0]["swing_point"]
-        swing_high = trent_point
+        dow_point = df.iloc[0]["swing_point"]
+        swing_high = dow_point
         direction = -1
 
         df.at[df.index[0], "direction"] = direction
-        df.at[df.index[0], "dow_trend"] = trent_point
+        df.at[df.index[0], "dow_point"] = dow_point
     elif df.iloc[0]["swing"] == "low":
-        trent_point = df.iloc[0]["swing_point"]
-        swing_low = trent_point
+        dow_point = df.iloc[0]["swing_point"]
+        swing_low = dow_point
         direction = 1
         df.at[df.index[0], "direction"] = direction
-        df.at[df.index[0], "dow_trend"] = trent_point
+        df.at[df.index[0], "dow_point"] = dow_point
 
     for d in range(1, n):
-
-        swing_high = (
-            df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "high" else swing_high
-        )
-
-        swing_low = (
-            df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "low" else swing_low
-        )
-
-        if direction == 1:
-            trend_point = swing_high
-        else:
-            trend_point = swing_low
+        swing_high = df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "high" else swing_high
+        swing_low = df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "low" else swing_low
 
         high = df.iloc[d]["high"]
         low = df.iloc[d]["low"]
 
-        if trend_point <= high and trend_point >= low:
-            # change direct
+        dow_point = swing_low if direction == -1 else swing_high
+
+        if high >= dow_point and low <= dow_point:
             direction = -direction
-            df.at[df.index[d], "direction"] = direction
-            df.at[df.index[d], "dow_trend"] = trend_point
-            continue
+
+        df.at[df.index[d], "direction"] = direction
+        df.at[df.index[d], "dow_point"] = dow_point
+        pass
+
     return df
 
 
