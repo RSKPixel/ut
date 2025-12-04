@@ -6,7 +6,7 @@ from config import eod
 from bokeh_chart import plot_tv_ohlc_bokeh
 from streamlit_bokeh import streamlit_bokeh
 from datetime import datetime, timedelta
-from tools import asc, lv, weekly_rdata
+from tools import asc, lv, weekly_rdata, ddt
 
 
 def main():
@@ -33,17 +33,19 @@ def main():
 
     df["asc"] = asc(df["close"], lookback=20)
     df["mvf"] = (df["asc"] - df["low"]) / df["asc"] * 100
-    df.drop(columns=["asc"])
+    df.drop(columns=["asc"], inplace=True)
     df["ldv"] = lv(df["high"], df["low"], df["close"], lookback=4)
 
     df = weekly_rdata(df)
-
+    df = df[df.index >= df.index.max() - timedelta(days=180)]
+    df = ddt(df)
     df["x"] = range(len(df))
     fig_bokeh = plot_tv_ohlc_bokeh(
         df,
         swing=True,
         debugging=True,
         compare=False,
+        dt=True,
         title="SSC Chart - Bokeh",
     )
 
@@ -62,6 +64,9 @@ def main():
                 "bar_type",
                 "swing_point",
                 "swing",
+                "dow_high",
+                "dow_low",
+                "direction",
                 "mvf",
                 "ldv",
                 "lwv",

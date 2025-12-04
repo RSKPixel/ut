@@ -2,6 +2,38 @@ import numpy as np
 import pandas as pd
 
 
+def ddt(df: pd.DataFrame) -> pd.DataFrame:
+    # Daily Dow Theory (DDT) Indicator
+    df = df.copy()
+    n = len(df)
+    df["dow_high"] = np.nan
+    df["dow_low"] = np.nan
+    df["dow_points"] = np.nan
+    df["direction"] = np.nan
+    current_high = -np.inf
+    current_low = np.inf
+
+
+    for d in range(1, n):
+        current_high = df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "high" else current_high
+        current_low = df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "low" else current_low
+        low = df.iloc[d]["low"]
+        high = df.iloc[d]["high"]
+
+        if np.isnan(current_high) and np.isnan(current_low):
+            continue
+
+        if current_high > high:
+            df.at[df.index[d], "dow_high"] = current_high
+            df.at[df.index[d], "dow_points"] = current_high
+            df.at[df.index[d], "direction"] = 1
+        elif current_low < low:
+            df.at[df.index[d], "dow_low"] = current_low
+            df.at[df.index[d], "dow_points"] = current_low
+            df.at[df.index[d], "direction"] = -1
+
+    return df        
+
 def asc(close: pd.Series, lookback=20) -> pd.Series:
     n = len(close)
     seq_close = np.full(n, np.nan)
