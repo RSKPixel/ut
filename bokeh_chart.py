@@ -125,29 +125,19 @@ def plot_tv_ohlc_bokeh(
     p.min_border_right = 10
 
     if dt:
-        df_dp = data[data["dow_points"].notna()].copy()
+        df_dp = data[data["ddow_trend"].notna()].copy()
 
         # Split by direction
-        df_up = df_dp[df_dp["direction"] == 1]  # blue line
-        df_down = df_dp[df_dp["direction"] == -1]  # red line
+        df_up = df_dp[df_dp["ddow_signal"] == 1]  # blue line
+        df_down = df_dp[df_dp["ddow_signal"] == -1]  # red line
+        p.line(
+            df_up["x_real"].values,
+            df_up["ddow_trend"].values,
+            color="blue",
+            line_width=2,
+        )
 
         # Plot UP trend (direction = 1)
-        if not df_up.empty:
-            p.line(
-                df_up["x_real"].values,
-                df_up["dow_points"].values,
-                color="blue",
-                line_width=2,
-            )
-
-        # Plot DOWN trend (direction = -1)
-        if not df_down.empty:
-            p.line(
-                df_down["x_real"].values,
-                df_down["dow_points"].values,
-                color="red",
-                line_width=2,
-            )
     # --- Swing line & markers (use real x so alignment matches data index) ---
     if swing:
         df_sw = data[data["swing_point"].notna()]

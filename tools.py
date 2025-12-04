@@ -1,45 +1,120 @@
 import numpy as np
 import pandas as pd
 
+import numpy as np
+import pandas as pd
 
-def ddt(df: pd.DataFrame) -> pd.DataFrame:
-    # Daily Dow Theory (DDT) Indicator
+
+import numpy as np
+import pandas as pd
+
+
+def compute_dow_points(df):
     df = df.copy()
-    n = len(df)
-    df["dow_high"] = np.nan
-    df["dow_low"] = np.nan
-    df["dow_points"] = np.nan
-    df["direction"] = np.nan
-    current_high = -np.inf
-    current_low = np.inf
+    print(df.head())
 
-    for d in range(1, n):
-        current_high = (
-            df.iloc[d - 1]["swing_point"]
-            if df.iloc[d]["swing"] == "high"
-            else current_high
-        )
-        current_low = (
-            df.iloc[d - 1]["swing_point"]
-            if df.iloc[d]["swing"] == "low"
-            else current_low
-        )
-        low = df.iloc[d - 1]["low"]
-        high = df.iloc[d - 1]["high"]
+    # -------------------------------------
+    # 1) Normalize swing column
+    # -------------------------------------
+    # Convert high/low or H/L to direction signals
+    swing_map = {"H": -1, "high": -1, "L": 1, "low": 1}
 
-        if np.isnan(current_high) and np.isnan(current_low):
-            continue
+    df["dir"] = df["swing"].map(swing_map)
 
-        if current_high > high:
-            df.at[df.index[d], "dow_high"] = current_high
-            df.at[df.index[d], "dow_points"] = current_high
-            df.at[df.index[d], "direction"] = -1
-        elif current_low < low:
-            df.at[df.index[d], "dow_low"] = current_low
-            df.at[df.index[d], "dow_points"] = current_low
-            df.at[df.index[d], "direction"] = 1
+    # If your swing is already numeric like 1 / -1
+    df["dir"] = df["dir"].fillna(df["swing"])
 
+    df["dir"] = df["dir"].ffill().fillna(0)
+
+    # -------------------------------------
+    # 2) First bar of new direction
+    # -------------------------------------
+    df["dfirstBarNewDir"] = np.where(df["dir"] != df["dir"].shift(), df["dir"], 0)
+
+    # -------------------------------------
+    # 3) Peaks and Troughs
+    # -------------------------------------
+    df["dPeak"] = df["swing_point"].where(df["dfirstBarNewDir"] == -1)
+    df["dTrough"] = df["swing_point"].where(df["dfirstBarNewDir"] == 1)
+
+    # -------------------------------------
+    # 4) Build Dow Trend Line
+    # -------------------------------------
+    df["ddow_trend"] = np.nan
+    trend = None
+
+    for i in range(len(df)):
+        row = df.iloc[i]
+        H = row["high"]
+        L = row["low"]
+        peak = row["dPeak"]
+        trough = row["dTrough"]
+
+        if trend is None:
+            trend = (H + L) / 2
+
+        prev_L = df["low"].shift().iloc[i]
+        prev_H = df["high"].shift().iloc[i]
+
+        # Uptrend region
+        if prev_L >= trend:
+            if L < trend:
+                trend = max(peak if not pd.isna(peak) else -np.inf, H)
+            else:
+                trend = max(trough if not pd.isna(trough) else trend, trend)
+        # Downtrend region
+        else:
+            if H > trend:
+                trend = min(trough if not pd.isna(trough) else np.inf, L)
+            else:
+                trend = min(peak if not pd.isna(peak) else trend, trend)
+
+        df.iloc[i, df.columns.get_loc("ddow_trend")] = trend
+
+    # -------------------------------------
+    # 5) Direction & signal
+    # -------------------------------------
+    df["mid"] = (df["high"] + df["low"]) / 2
+    df["ddow_dir"] = np.sign(df["mid"] - df["ddow_trend"])
+
+    df["ddow_signal"] = np.where(
+        df["ddow_dir"] != df["ddow_dir"].shift(), df["ddow_dir"], 0
+    )
+    print(df[["dPeak", "dTrough", "ddow_trend", "ddow_dir", "ddow_signal"]].head(20))
     return df
+
+
+# def ddt(df: pd.DataFrame) -> pd.DataFrame:
+#     # Daily Dow Theory (DDT) Indicator
+#     df = df.copy()
+#     n = len(df)
+#     df["dow_high"] = np.nan
+#     df["dow_low"] = np.nan
+#     df["dow_points"] = np.nan
+#     df["direction"] = np.nan
+#     current_high = -np.inf
+#     current_low = np.inf
+#     direction = 0  # 1=up, -1=down, 0=unknown
+
+#     for d in range(1, n):
+#         current_high = (
+#             df.iloc[d - 1]["swing_point"]
+#             if df.iloc[d]["swing"] == "high"
+#             else current_high
+#         )
+#         current_low = (
+#             df.iloc[d - 1]["swing_point"]
+#             if df.iloc[d]["swing"] == "low"
+#             else current_low
+#         )
+#         low = df.iloc[d - 1]["low"]
+#         high = df.iloc[d - 1]["high"]
+#         swing = df.iloc[d]["swing"] if df.iloc[d]["swing"] in ["high", "low"] else swing
+
+#         if np.isnan(current_high) and np.isnan(current_low):
+#             continue
+
+#     return df
 
 
 def asc(close: pd.Series, lookback=20) -> pd.Series:
