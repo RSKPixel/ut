@@ -1,0 +1,7 @@
+pandas
+numpy
+SQLAlchemy
+psycopg2
+streamlit
+streamlit-bokeh
+bokeh
