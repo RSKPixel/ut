@@ -13,7 +13,7 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
     df["dow_buy"] = np.nan
     df["dow_sell"] = np.nan
     df["profit_points"] = np.nan
-    df["profit"] = np.nan
+    df["profit"] = ""
 
     n = len(df)
     dow_point = None

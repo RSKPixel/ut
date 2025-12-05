@@ -9,6 +9,7 @@ from bokeh.models import (
     PanTool,
 )
 import pandas as pd
+import numpy as np
 
 
 def plot_tv_ohlc_bokeh(
@@ -206,17 +207,15 @@ def plot_tv_ohlc_bokeh(
                 line_dash="solid",
             )
 
-        df_inter = df_dp[df_dp["intersection"].notna()]
-        df_inter["color"] = df_dp["direction"].apply(
-            lambda x: "red" if x == 1 else "green"
-        )
+        df_inter = df_dp[df_dp["intersection"].notna()].copy()
+        df_inter.loc[:, "color"] = np.where(df_inter["direction"] == 1, "red", "green")
+
         p.scatter(
             df_inter["x_real"].values,
             df_inter["intersection"].values,
             marker="x",
             size=8,
             color=df_inter["color"],
-            # alpha=1.0,
             legend_label="Trend Intersection",
         )
 
