@@ -6,7 +6,7 @@ from config import eod
 from bokeh_chart import plot_tv_ohlc_bokeh
 from streamlit_bokeh import streamlit_bokeh
 from datetime import datetime, timedelta
-from tools import asc, lv, weekly_rdata, ddt, ddt2
+from tools import asc, lv, weekly_rdata, ddt2
 
 
 def main():
@@ -73,6 +73,7 @@ def main():
                 "peak",
                 "trough",
                 "dow_point",
+                # "profit",
                 "direction",
                 "mvf",
                 "ldv",

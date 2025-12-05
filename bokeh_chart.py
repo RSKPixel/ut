@@ -125,33 +125,63 @@ def plot_tv_ohlc_bokeh(
     p.min_border_right = 10
 
     if dt:
-        df_dp = data[data["dow_point"].notna()].copy()
 
-        # Split by direction
-        df_points = df_dp[df_dp["direction"].notna()]
-        df_down = df_dp[df_dp["direction"] == -1]  # red line
-        df_up = df_dp[df_dp["direction"] == 1]  # blue line
-        p.line(
-            df_points["x_real"].values,
-            df_points["dow_point"].values,
-            color="green",
-            line_width=1,
-            # line_dash="dotted",
+        def split_segments(df):
+            segments = []
+            current = []
+
+            prev_dir = None
+
+            for _, row in df.iterrows():
+                d = row["direction"]
+
+                if prev_dir is None:
+                    # starting segment
+                    current = [row]
+                    prev_dir = d
+                    continue
+
+                if d == prev_dir:
+                    # continue segment
+                    current.append(row)
+                else:
+                    # direction changed → close segment
+                    if len(current) > 1:
+                        segments.append(pd.DataFrame(current))
+                    current = [row]
+                    prev_dir = d
+
+            # append last segment
+            if len(current) > 1:
+                segments.append(pd.DataFrame(current))
+
+            return segments
+
+        df_dp = data[data["dow_point"].notna() & data["direction"].notna()]
+        segments = split_segments(df_dp)
+
+        for seg in segments:
+            color = "blue" if seg["direction"].iloc[0] == 1 else "red"
+
+            p.line(
+                seg["x_real"].values,
+                seg["dow_point"].values,
+                color=color,
+                line_width=1,
+                line_dash="solid",
+            )
+
+        df_inter = df_dp[df_dp["intersection"].notna()]
+
+        p.circle_dot(
+            df_inter["x_real"].values,
+            df_inter["intersection"].values,
+            size=3,
+            color="red",
+            # alpha=1.0,
+            legend_label="Trend Intersection",
         )
-        # p.line(
-        #     df_up["x_real"].values,
-        #     df_up["dow_point"].values,
-        #     color="blue",
-        #     line_width=2,
-        # )
-        # p.line(
-        #     df_down["x_real"].values,
-        #     df_down["dow_point"].values,
-        #     color="red",
-        #     line_width=2,
-        # )
 
-        # Plot UP trend (direction = 1)
     # --- Swing line & markers (use real x so alignment matches data index) ---
     if swing:
         df_sw = data[data["swing_point"].notna()]

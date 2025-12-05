@@ -9,6 +9,7 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
     df["dow_point"] = np.nan
     df["peak"] = np.nan
     df["trough"] = np.nan
+    df["intersection"] = np.nan
 
     n = len(df)
     dow_point = None
@@ -38,70 +39,29 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
         h = df.iloc[d]["high"]
         l = df.iloc[d]["low"]
 
-        if h >= dow_point and l <= dow_point:
-            direction = -direction
+        if h >= dow_point and direction == -1:
+            direction = 1
+            df.at[df.index[d], "intersection"] = dow_point
+        elif l <= dow_point and direction == 1:
+            direction = -1
+            df.at[df.index[d], "intersection"] = dow_point
 
         if direction == 1:
             dow_point = swing_low
             df.at[df.index[d - 1], "trough"] = dow_point
-
             df.at[df.index[d], "trough"] = dow_point
         elif direction == -1:
             dow_point = swing_high
-
             df.at[df.index[d - 1], "peak"] = dow_point
+
             df.at[df.index[d], "peak"] = dow_point
 
-        # pass
+    # n = len(df)
+    # for d in range(1, n):
 
-    return df
-
-
-def ddt(data: pd.DataFrame) -> pd.DataFrame:
-    df = data.copy()
-
-    df["direction"] = np.nan
-    df["dow_point"] = np.nan
-
-    n = len(df)
-    dow_point = None
-    direction = 0
-    swing_high = 0
-    swing_low = 0
-
-    if df.iloc[0]["swing"] == "high":
-        dow_point = df.iloc[0]["swing_point"]
-        swing_high = dow_point
-        direction = -1
-
-        df.at[df.index[0], "direction"] = direction
-        df.at[df.index[0], "dow_point"] = dow_point
-    elif df.iloc[0]["swing"] == "low":
-        dow_point = df.iloc[0]["swing_point"]
-        swing_low = dow_point
-        direction = 1
-        df.at[df.index[0], "direction"] = direction
-        df.at[df.index[0], "dow_point"] = dow_point
-
-    for d in range(1, n):
-        swing_high = (
-            df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "high" else swing_high
-        )
-        swing_low = (
-            df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "low" else swing_low
-        )
-
-        high = df.iloc[d]["high"]
-        low = df.iloc[d]["low"]
-
-        dow_point = swing_low if direction == -1 else swing_high
-
-        if high >= dow_point and low <= dow_point:
-            direction = -direction
-
-        df.at[df.index[d], "direction"] = direction
-        df.at[df.index[d], "dow_point"] = dow_point
-        pass
+    #     if df.iloc[d]["dow_point"] != df.iloc[d - 1]["dow_point"]:
+    #         df.at[df.index[d - 1], "dow_point"] = df.iloc[d]["dow_point"]
+    #         df.at[df.index[d - 1], "direction"] = df.iloc[d]["direction"]
 
     return df
 
