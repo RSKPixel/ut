@@ -62,6 +62,8 @@ def main():
                 "low",
                 "close",
                 "bar_type",
+                "swing_high",
+                "swing_low",
                 "swing_point",
                 "swing",
                 "peak",

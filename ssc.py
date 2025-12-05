@@ -43,6 +43,8 @@ def SwingPoints2(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df = BarIdentification(df, key="bar_type")
     df["swing_point"] = np.nan
+    df["swing_high"] = np.nan
+    df["swing_low"] = np.nan
     df["swing"] = ""
     previous_db_index = 0
     swing_index = 0
@@ -272,6 +274,8 @@ def SwingPoints2(df: pd.DataFrame) -> pd.DataFrame:
 
             # check for cunsquative OBSs
 
+    df["swing_high"] = np.where(df["swing"] == "high", df["swing_point"], np.nan)
+    df["swing_low"] = np.where(df["swing"] == "low", df["swing_point"], np.nan)
     return df
 
 
