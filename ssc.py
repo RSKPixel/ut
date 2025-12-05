@@ -155,20 +155,16 @@ def SwingPoints2(df: pd.DataFrame) -> pd.DataFrame:
                     #     # and we need to check for new a swing high which in between previous_db_index and swing_index
                     if current_h > swing_point and current_l < previous_l:
 
-                        # if i in lookfor:
-                        #     print(
-                        #         i,
-                        #         swing,
-                        #         swing_point,
-                        #         swing_index,
-                        #         previous_db_index,
-                        #     )
                         if df.iloc[previous_db_index]["low"] < swing_point:
                             resolving_ll = df.iloc[swing_index : previous_db_index + 1][
                                 "low"
                             ].min()
                             swing_point = resolving_ll
                             swing = "low"
+
+                            if df[df["low"] == resolving_ll].empty:
+                                continue
+
                             swing_index = df.index.get_loc(
                                 df[df["low"] == resolving_ll].index[0]
                             )
@@ -178,10 +174,12 @@ def SwingPoints2(df: pd.DataFrame) -> pd.DataFrame:
                             ].max()
                             swing_point = resolving_hh
                             swing = "high"
+
+                            if df[df["high"] == resolving_hh].empty:
+                                continue
                             swing_index = df.index.get_loc(
                                 df[df["high"] == resolving_hh].index[0]
                             )
-
                         df.at[df.index[swing_index], "swing_point"] = swing_point
                         df.at[df.index[swing_index], "swing"] = swing
 

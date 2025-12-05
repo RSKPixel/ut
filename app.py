@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from ssc import SwingPoints2
 import streamlit as st
 from config import eod
@@ -33,18 +32,16 @@ def main():
 
     df["asc"] = asc(df["close"], lookback=20)
     df["mvf"] = (df["asc"] - df["low"]) / df["asc"] * 100
-    df.drop(columns=["asc"], inplace=True)
     df["ldv"] = lv(df["high"], df["low"], df["close"], lookback=4)
-
     df = weekly_rdata(df)
-    # df = df[
-    #     (df.index >= df.index.max() - timedelta(days=180))
-    #     & (df.index <= datetime.strptime("2025-08-15", "%Y-%m-%d"))
-    # ]
-
     df = ddt2(df)
 
-    # df = ddt(df)
+    df.drop(columns=["asc"], inplace=True)
+    df = df[
+        (df.index >= df.index.max() - timedelta(days=180))
+
+    ]
+
     df["x"] = range(len(df))
     fig_bokeh = plot_tv_ohlc_bokeh(
         df,

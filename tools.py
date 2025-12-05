@@ -28,6 +28,20 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
 
     for d in range(1, n):
 
+        if direction == 0:
+            if df.iloc[d]["swing"] == "high":
+                dow_point = df.iloc[d]["swing_point"]
+                swing_high = dow_point
+                direction = -1
+            elif df.iloc[d]["swing"] == "low":
+                dow_point = df.iloc[d]["swing_point"]
+                swing_low = dow_point
+                direction = 1
+
+            if direction == 0:
+                continue
+
+
         swing_low = (
             df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "low" else swing_low
         )

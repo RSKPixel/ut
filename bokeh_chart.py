@@ -161,7 +161,7 @@ def plot_tv_ohlc_bokeh(
         segments = split_segments(df_dp)
 
         for seg in segments:
-            color = "blue" if seg["direction"].iloc[0] == 1 else "red"
+            color = "red" if seg["direction"].iloc[0] == 1 else "green"
 
             p.line(
                 seg["x_real"].values,
