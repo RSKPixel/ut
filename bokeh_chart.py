@@ -58,7 +58,6 @@ def plot_tv_ohlc_bokeh(
             source.data["swing_penfold"] = data["swing_penfold"].values
 
     # Colors
-
     if debugging:
         up = "#777777"
         down = "#777777"
@@ -81,10 +80,18 @@ def plot_tv_ohlc_bokeh(
             up if c >= o else down
             for o, c in zip(source.data["open"], source.data["close"])
         ]
+
     # ticks (for small open/close ticks)
     tick_size = 0.25
     source.data["open_tick_x"] = source.data["x"] - tick_size
     source.data["close_tick_x"] = source.data["x"] + tick_size
+
+    # 🚀 FIX: Determine the initial x-range for the last 120 bars
+    x_int_values = data["x_int"].values
+
+    # Calculate the starting point: N - 120 + 1 (with padding of +/- 0.5)
+    initial_x_start = max(x_int_values.min(), x_int_values.max() - 120 + 1) - 0.5
+    initial_x_end = x_int_values.max() + 0.5
 
     # --- Figure (do NOT set active_scroll in figure) ---
     p = figure(
@@ -95,7 +102,9 @@ def plot_tv_ohlc_bokeh(
         background_fill_color="#000000",
         border_fill_color="#000000",
         outline_line_color="#444c56",
-        # active_scroll will be set below to WheelZoomTool
+        # Set the correct initial range here:
+        x_range=(initial_x_start, initial_x_end),
+        # Note: range_padding is automatically handled by the -0.5 and +0.5 above
     )
 
     # styling
@@ -113,14 +122,12 @@ def plot_tv_ohlc_bokeh(
 
     # set default scroll action to zoom (so two-finger up/down or pinch zooms)
     p.toolbar.active_scroll = wheel_zoom
-    # optionally set active_drag if you want drag to pan by default:
-    # p.toolbar.active_drag = pan_tool
 
     # --- Prevent candles from leaving frame ---
     xmin = int(data["x_int"].min())
     xmax = int(data["x_int"].max())
     p.x_range.bounds = (xmin - 1, xmax + 1)
-    p.x_range.range_padding = 0.6
+    # The invalid p.x_range.range_padding has been removed.
     p.x_range.min_interval = 1
     p.min_border_left = 10
     p.min_border_right = 10
@@ -165,7 +172,6 @@ def plot_tv_ohlc_bokeh(
         def split_segments(df):
             segments = []
             current = []
-
             prev_dir = None
 
             for _, row in df.iterrows():
