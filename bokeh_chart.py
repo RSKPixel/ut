@@ -124,6 +124,41 @@ def plot_tv_ohlc_bokeh(
     p.min_border_left = 10
     p.min_border_right = 10
 
+    # --- Swing line & markers (use real x so alignment matches data index) ---
+    if swing:
+        df_sw = data[data["swing_point"].notna()]
+        if not df_sw.empty:
+            # plot using real x coordinates
+            p.line(
+                df_sw["x_real"].values,
+                df_sw["swing_point"].values,
+                color=swing_color,
+                line_width=2,
+            )
+            p.scatter(
+                df_sw["x_real"].values,
+                df_sw["swing_point"].values,
+                size=2,
+                fill_color=swing_color,
+                line_color="white",
+                line_width=0.5,
+            )
+
+    # --- Draw candles (using x_int so they're pixel aligned) ---
+    p.segment("x", "low", "x", "high", source=source, line_width=2, color="color")
+    p.segment(
+        "x", "open", "open_tick_x", "open", source=source, line_width=3, color="color"
+    )
+    p.segment(
+        "x",
+        "close",
+        "close_tick_x",
+        "close",
+        source=source,
+        line_width=3,
+        color="color",
+    )
+
     if dt:
 
         def split_segments(df):
@@ -172,50 +207,18 @@ def plot_tv_ohlc_bokeh(
             )
 
         df_inter = df_dp[df_dp["intersection"].notna()]
-
-        p.circle_dot(
+        df_inter["color"] = df_dp["direction"].apply(
+            lambda x: "red" if x == 1 else "green"
+        )
+        p.scatter(
             df_inter["x_real"].values,
             df_inter["intersection"].values,
-            size=3,
-            color="red",
+            marker="x",
+            size=8,
+            color=df_inter["color"],
             # alpha=1.0,
             legend_label="Trend Intersection",
         )
-
-    # --- Swing line & markers (use real x so alignment matches data index) ---
-    if swing:
-        df_sw = data[data["swing_point"].notna()]
-        if not df_sw.empty:
-            # plot using real x coordinates
-            p.line(
-                df_sw["x_real"].values,
-                df_sw["swing_point"].values,
-                color=swing_color,
-                line_width=2,
-            )
-            p.scatter(
-                df_sw["x_real"].values,
-                df_sw["swing_point"].values,
-                size=2,
-                fill_color=swing_color,
-                line_color="white",
-                line_width=0.5,
-            )
-
-    # --- Draw candles (using x_int so they're pixel aligned) ---
-    p.segment("x", "low", "x", "high", source=source, line_width=2, color="color")
-    p.segment(
-        "x", "open", "open_tick_x", "open", source=source, line_width=3, color="color"
-    )
-    p.segment(
-        "x",
-        "close",
-        "close_tick_x",
-        "close",
-        source=source,
-        line_width=3,
-        color="color",
-    )
 
     if compare:
         # --- Penfold Swing line & markers (use real x so alignment matches data index) ---

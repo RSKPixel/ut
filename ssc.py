@@ -111,6 +111,9 @@ def SwingPoints2(df: pd.DataFrame) -> pd.DataFrame:
                             ].max()
                             swing_point = resolving_hh
                             swing = "high"
+                            if df[df["high"] == resolving_hh].empty:
+                                continue
+
                             swing_index = df.index.get_loc(
                                 df[df["high"] == resolving_hh].index[0]
                             )
@@ -121,6 +124,10 @@ def SwingPoints2(df: pd.DataFrame) -> pd.DataFrame:
 
                             swing_point = resolving_ll
                             swing = "low"
+
+                            if df[df["low"] == resolving_ll].empty:
+                                continue
+
                             swing_index = df.index.get_loc(
                                 df[df["low"] == resolving_ll].index[0]
                             )

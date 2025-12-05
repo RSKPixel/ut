@@ -16,7 +16,7 @@ def main():
         ["CRUDEOIL", "GOLD", "SILVER", "NATURALGAS", "NIFTY", "BANKNIFTY"],
         index=0,
     )
-    df_ohlc = eod(symbol, "2024-01-02", "2024-12-31")
+    df_ohlc = eod(symbol, "2025-06-01", "2025-12-31")
     # df_ohlc = pd.read_csv(f"data/{symbol.lower()}-ohlc-data.csv")
     df_ohlc["date"] = pd.to_datetime(df_ohlc["date"])
     df_ohlc.set_index("date", inplace=True)
@@ -37,10 +37,7 @@ def main():
     df = ddt2(df)
 
     df.drop(columns=["asc"], inplace=True)
-    df = df[
-        (df.index >= df.index.max() - timedelta(days=180))
-
-    ]
+    df = df[(df.index >= df.index.max() - timedelta(days=180))]
 
     df["x"] = range(len(df))
     fig_bokeh = plot_tv_ohlc_bokeh(
@@ -70,8 +67,12 @@ def main():
                 "peak",
                 "trough",
                 "dow_point",
-                # "profit",
+                "intersection",
                 "direction",
+                "dow_buy",
+                "dow_sell",
+                "profit_points",
+                "profit",
                 "mvf",
                 "ldv",
                 "lwv",

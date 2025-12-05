@@ -38,5 +38,6 @@
     // "editor.wordWrapColumn": 120
   },
   "python.analysis.extraPaths": ["./"],
-  "python.testing.cwd": "${workspaceFolder}"
+  "python.testing.cwd": "${workspaceFolder}",
+  "python.REPL.enableREPLSmartSend": false
 }

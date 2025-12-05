@@ -10,6 +10,10 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
     df["peak"] = np.nan
     df["trough"] = np.nan
     df["intersection"] = np.nan
+    df["dow_buy"] = np.nan
+    df["dow_sell"] = np.nan
+    df["profit_points"] = np.nan
+    df["profit"] = np.nan
 
     n = len(df)
     dow_point = None
@@ -41,7 +45,6 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
             if direction == 0:
                 continue
 
-
         swing_low = (
             df.iloc[d]["swing_point"] if df.iloc[d]["swing"] == "low" else swing_low
         )
@@ -62,20 +65,50 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
 
         if direction == 1:
             dow_point = swing_low
-            df.at[df.index[d - 1], "trough"] = dow_point
+            # df.at[df.index[d - 1], "trough"] = dow_point
             df.at[df.index[d], "trough"] = dow_point
         elif direction == -1:
             dow_point = swing_high
-            df.at[df.index[d - 1], "peak"] = dow_point
+            # df.at[df.index[d - 1], "peak"] = dow_point
 
             df.at[df.index[d], "peak"] = dow_point
 
-    # n = len(df)
-    # for d in range(1, n):
+    df["dow_buy"] = np.where(
+        (df["direction"] == -1) & (df["intersection"].notna()),
+        df["intersection"],
+        np.nan,
+    )
+    df["dow_sell"] = np.where(
+        (df["direction"] == 1) & (df["intersection"].notna()),
+        df["intersection"],
+        np.nan,
+    )
 
-    #     if df.iloc[d]["dow_point"] != df.iloc[d - 1]["dow_point"]:
-    #         df.at[df.index[d - 1], "dow_point"] = df.iloc[d]["dow_point"]
-    #         df.at[df.index[d - 1], "direction"] = df.iloc[d]["direction"]
+    found_sell = False
+    sell = np.nan
+    sell_index = -1
+
+    for d in range(len(df) - 1, -1, -1):
+
+        # SELL detection
+        if not pd.isna(df.iloc[d]["dow_sell"]):
+            found_sell = True
+            sell = df.iloc[d]["dow_sell"]
+            sell_index = d
+
+        # BUY detection → match with pending sell
+        if not pd.isna(df.iloc[d]["dow_buy"]) and found_sell:
+            buy = df.iloc[d]["dow_buy"]
+
+            df.at[df.index[sell_index], "profit_points"] = sell - buy
+            df.at[df.index[sell_index], "profit"] = (
+                "profit" if (sell - buy) > 0 else "loss"
+            )
+
+            # Reset for next pair
+            found_sell = False
+            sell = np.nan
+            sell_index = -1
 
     return df
 
