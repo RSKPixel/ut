@@ -20,6 +20,7 @@ def plot_tv_ohlc_bokeh(
     swing=True,
     debugging=False,
     dt=True,
+    stacked_swings=False,
 ):
 
     data = data.copy()
@@ -96,7 +97,7 @@ def plot_tv_ohlc_bokeh(
     # --- Figure (do NOT set active_scroll in figure) ---
     p = figure(
         width=1200,
-        height=520,
+        height=420,
         x_axis_type="linear",
         title=title,
         background_fill_color="#000000",
@@ -259,7 +260,7 @@ def plot_tv_ohlc_bokeh(
                     line_width=0.5,
                     line_alpha=0.8,
                 )
-    if debugging:
+    if stacked_swings:
         # --- Highlight Stacked Swing Bars ---
         if "duplicate_swings" in data.columns:
             df_sw_stacked = data[data["duplicate_swings"]]
