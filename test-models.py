@@ -9,7 +9,7 @@ from models import kbd1
 
 
 def main():
-    st.set_page_config(page_title="SSC Data Viewer", layout="wide")
+    st.set_page_config(page_title="KBD1 - Testing Model", layout="wide")
     symbol = "NIFTY"
     symbol = st.selectbox(
         "Select Symbol",
@@ -23,10 +23,12 @@ def main():
     df.to_csv(f"data/{symbol.lower()}-ohlc-data.csv")
     signals = []
     for d in range(1, len(df)):
-        signals.append(kbd1.signal(df[0:d]))
+        s = kbd1.signal(df.iloc[:d])
+        if s.iloc[0]["signal"] is not None:
+            signals.append(s)
 
     signal_df = pd.concat(signals)
-    signal_df = signal_df.dropna()
+    # signal_df = signal_df.dropna()
     st.write(signal_df)
     return df
 

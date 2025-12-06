@@ -21,7 +21,6 @@ def signal(df: pd.DataFrame):
     if df.iloc[-1]["dow_cross"] and df.iloc[-1]["direction"] == 1:
         # Bullish Setup
         # Check for previous dow cross to identify setup candle
-
         buy_price = df.iloc[-1]["dow_cross"]
         sell_price = np.nan
         profit_points = np.nan
@@ -39,9 +38,10 @@ def signal(df: pd.DataFrame):
         if setup_bar and profit_points < 0:
             signal["signal"] = "buy"
             signal["entry_price"] = buy_price
+            signal["setup_candle"] = df.index[-1]
             signal["entry_date"] = df.index[-1]
 
-    elif df.iloc[-1]["dow_cross"] and df.iloc[-1]["direction"] == -1:
+    if df.iloc[-1]["dow_cross"] and df.iloc[-1]["direction"] == -1:
         # Bearish Setup
         # Check for previous dow cross to identify setup candle
 
@@ -62,6 +62,7 @@ def signal(df: pd.DataFrame):
         if setup_bar and profit_points < 0:
             signal["signal"] = "sell"
             signal["entry_price"] = sell_price
+            signal["setup_candle"] = df.index[-1]
             signal["entry_date"] = df.index[-1]
 
     return pd.DataFrame([signal])
