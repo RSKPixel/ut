@@ -10,12 +10,12 @@ def signal(df: pd.DataFrame):
 
     df = df.copy()
     signal = {
+        "model": "KBD1",
         "signal": None,
         "setup_candle": None,
-        "entry_candle": None,
+        "entry_date": None,
+        "entry_price": None,
         "entry_day_sl": None,
-        "tailing_sl": None,
-        "target": None,
     }
 
     if df.iloc[-1]["dow_cross"] and df.iloc[-1]["direction"] == 1:
@@ -40,6 +40,7 @@ def signal(df: pd.DataFrame):
             signal["entry_price"] = buy_price
             signal["setup_candle"] = df.index[-1]
             signal["entry_date"] = df.index[-1]
+            signal["entry_day_sl"] = df.iloc[-1]["low"]
 
     if df.iloc[-1]["dow_cross"] and df.iloc[-1]["direction"] == -1:
         # Bearish Setup
@@ -64,5 +65,6 @@ def signal(df: pd.DataFrame):
             signal["entry_price"] = sell_price
             signal["setup_candle"] = df.index[-1]
             signal["entry_date"] = df.index[-1]
+            signal["entry_day_sl"] = df.iloc[-1]["high"]
 
     return pd.DataFrame([signal])

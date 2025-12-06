@@ -27,8 +27,12 @@ def main():
         if s.iloc[0]["signal"] is not None:
             signals.append(s)
 
+    signal_df = pd.DataFrame()
     signal_df = pd.concat(signals)
     # signal_df = signal_df.dropna()
+    signal_df.reset_index(drop=True, inplace=True)
+    signal_df.sort_values(by="setup_candle", inplace=True, ascending=False)
+    signal_df = signal_df.round(2)
     st.write(signal_df)
     return df
 
