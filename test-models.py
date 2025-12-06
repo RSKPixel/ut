@@ -23,7 +23,7 @@ def main():
     df.to_csv(f"data/{symbol.lower()}-ohlc-data.csv")
     signals = []
     for d in range(1, len(df)):
-        signals.append(kbd1.signal(df))
+        signals.append(kbd1.signal(df[0:d]))
 
     signal_df = pd.concat(signals)
     signal_df = signal_df.dropna()
