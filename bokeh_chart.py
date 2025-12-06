@@ -204,7 +204,7 @@ def plot_tv_ohlc_bokeh(
         segments = split_segments(df_dp)
 
         for seg in segments:
-            color = "red" if seg["direction"].iloc[0] == 1 else "green"
+            color = "red" if seg["direction"].iloc[0] == -1 else "green"
 
             p.line(
                 seg["x_real"].values,
@@ -215,7 +215,7 @@ def plot_tv_ohlc_bokeh(
             )
 
         df_inter = df_dp[df_dp["intersection"].notna()].copy()
-        df_inter.loc[:, "color"] = np.where(df_inter["direction"] == 1, "red", "green")
+        df_inter.loc[:, "color"] = np.where(df_inter["direction"] == -1, "red", "green")
 
         p.scatter(
             df_inter["x_real"].values,

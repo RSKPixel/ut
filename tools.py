@@ -10,10 +10,7 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
     df["peak"] = np.nan
     df["trough"] = np.nan
     df["intersection"] = np.nan
-    df["dow_buy"] = np.nan
-    df["dow_sell"] = np.nan
-    df["profit_points"] = np.nan
-    df["profit"] = ""
+    df["dow_cross"] = np.nan
 
     n = len(df)
     dow_point = None
@@ -24,11 +21,11 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
     if df.iloc[0]["swing"] == "high":
         dow_point = df.iloc[0]["swing_point"]
         swing_high = dow_point
-        direction = -1
+        direction = 1
     elif df.iloc[0]["swing"] == "low":
         dow_point = df.iloc[0]["swing_point"]
         swing_low = dow_point
-        direction = 1
+        direction = -1
 
     for d in range(1, n):
 
@@ -36,11 +33,11 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
             if df.iloc[d]["swing"] == "high":
                 dow_point = df.iloc[d]["swing_point"]
                 swing_high = dow_point
-                direction = -1
+                direction = 1
             elif df.iloc[d]["swing"] == "low":
                 dow_point = df.iloc[d]["swing_point"]
                 swing_low = dow_point
-                direction = 1
+                direction = -1
 
             if direction == 0:
                 continue
@@ -56,59 +53,24 @@ def ddt2(data: pd.DataFrame) -> pd.DataFrame:
         h = df.iloc[d]["high"]
         l = df.iloc[d]["low"]
 
-        if h >= dow_point and direction == -1:
-            direction = 1
-            df.at[df.index[d], "intersection"] = dow_point
-        elif l <= dow_point and direction == 1:
+        if h >= dow_point and direction == 1:
             direction = -1
             df.at[df.index[d], "intersection"] = dow_point
+            df.at[df.index[d], "dow_cross"] = dow_point
+        elif l <= dow_point and direction == -1:
+            direction = 1
+            df.at[df.index[d], "intersection"] = dow_point
+            df.at[df.index[d], "dow_cross"] = dow_point
 
-        if direction == 1:
+        if direction == -1:
             dow_point = swing_low
             # df.at[df.index[d - 1], "trough"] = dow_point
             df.at[df.index[d], "trough"] = dow_point
-        elif direction == -1:
+        elif direction == 1:
             dow_point = swing_high
             # df.at[df.index[d - 1], "peak"] = dow_point
 
             df.at[df.index[d], "peak"] = dow_point
-
-    df["dow_buy"] = np.where(
-        (df["direction"] == -1) & (df["intersection"].notna()),
-        df["intersection"],
-        np.nan,
-    )
-    df["dow_sell"] = np.where(
-        (df["direction"] == 1) & (df["intersection"].notna()),
-        df["intersection"],
-        np.nan,
-    )
-
-    found_sell = False
-    sell = np.nan
-    sell_index = -1
-
-    for d in range(len(df) - 1, -1, -1):
-
-        # SELL detection
-        if not pd.isna(df.iloc[d]["dow_sell"]):
-            found_sell = True
-            sell = df.iloc[d]["dow_sell"]
-            sell_index = d
-
-        # BUY detection → match with pending sell
-        if not pd.isna(df.iloc[d]["dow_buy"]) and found_sell:
-            buy = df.iloc[d]["dow_buy"]
-
-            df.at[df.index[sell_index], "profit_points"] = sell - buy
-            df.at[df.index[sell_index], "profit"] = (
-                "profit" if (sell - buy) > 0 else "loss"
-            )
-
-            # Reset for next pair
-            found_sell = False
-            sell = np.nan
-            sell_index = -1
 
     return df
 

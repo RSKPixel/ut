@@ -21,9 +21,13 @@ def main():
     # df_ohlc = pd.read_csv(f"data/{symbol.lower()}-ohlc-data.csv")
     df = ut(df_ohlc)
     df.to_csv(f"data/{symbol.lower()}-ohlc-data.csv")
+    signals = []
+    for d in range(1, len(df)):
+        signals.append(kbd1.signal(df))
 
-    signals = kbd1.signal(df, setup="buy")
-    st.write(signals)
+    signal_df = pd.concat(signals)
+    signal_df = signal_df.dropna()
+    st.write(signal_df)
     return df
 
 
