@@ -15,7 +15,7 @@ import numpy as np
 def plot_tv_ohlc_bokeh(
     data,
     compare=False,
-    date_fmt="%Y-%m-%d",
+    date_fmt="%Y-%m-%d %H:%M",
     title="TradingView OHLC (TV-like)",
     swing=True,
     debugging=False,
